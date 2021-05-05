@@ -16688,27 +16688,9 @@ namespace basist
 		for (int c = 0; c < 256; c++)
 		{
 			endpoint_err best;
-			best.m_error = (uint16_t)UINT16_MAX;
-
-			for (uint32_t l = 0; l < 128; l++)
-			{
-				const uint32_t low = (l << 1) | (l >> 6);
-
-				for (uint32_t h = 0; h < 128; h++)
-				{
-					const uint32_t high = (h << 1) | (h >> 6);
-
-					const int k = (low * (64 - g_bc7_weights2[BC7ENC_MODE_5_OPTIMAL_INDEX]) + high * g_bc7_weights2[BC7ENC_MODE_5_OPTIMAL_INDEX] + 32) >> 6;
-
-					const int err = (k - c) * (k - c);
-					if (err < best.m_error)
-					{
-						best.m_error = (uint16_t)err;
-						best.m_lo = (uint8_t)l;
-						best.m_hi = (uint8_t)h;
-					}
-				} // h
-			} // l
+			best.m_error = 0;
+			best.m_lo = c >> 1;
+			best.m_hi = (c >> 1) + (c & 1) - (c >> 7);
 
 			g_bc7_mode_5_optimal_endpoints[c] = best;
 
@@ -16992,7 +16974,7 @@ namespace basist
 		{
 			m_format = basist::basis_tex_format::cETC1S;
 			
-			// 3.10.2: "Whether the image has 1 or 2 slices can be determined from the DFD’s sample count."
+			// 3.10.2: "Whether the image has 1 or 2 slices can be determined from the DFD's sample count."
 			// If m_has_alpha is true it may be 2-channel RRRG or 4-channel RGBA, but we let the caller deal with that.
 			m_has_alpha = (m_header.m_dfd_byte_length == 60);
 			
